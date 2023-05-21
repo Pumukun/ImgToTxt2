@@ -47,9 +47,16 @@ class TextWindow(ctk.CTk):
         # explorer button
         self.explorer_button = ctk.CTkButton(master=self.input_frame, 
                                              text='explorer', 
-                                             height=4, width=10, 
+                                             height=4, width=70, 
                                              command=self.open_explorer)
         self.explorer_button.grid(row=2, column=1, padx=(5, 0), pady=(2, 5), sticky='w')
+
+        # clipboard button
+        self.clipboard_button = ctk.CTkButton(master=self.input_frame,
+                                              text='clipboard',
+                                              height=4, width=70,
+                                              command=self.clipboard_add)
+        self.clipboard_button.grid(row=2, column=1, padx=(80, 0), pady=(2, 5), sticky='w')
         
 
         ## Text fields
@@ -86,7 +93,10 @@ class TextWindow(ctk.CTk):
         if file_path[file_path.find('.')::] in filetypes:
             return True
         return False 
-    
+   
+    def clipboard_add(self):
+        pass
+
     def open_explorer(self):
         self.input_field.delete(0, 100)
         self.input_field.insert(0, easygui.fileopenbox(filetypes=filetypes))
