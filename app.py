@@ -1,10 +1,12 @@
 import tkinter
 import customtkinter as ctk
 
-from PIL import Image
+from PIL import Image, ImageGrab
 import pytesseract as ptsr
 
 import easygui
+import tempfile
+import os
 
 filetypes = ['.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg',
              '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm',
@@ -95,7 +97,20 @@ class TextWindow(ctk.CTk):
         return False 
    
     def clipboard_add(self):
-        pass
+        try:
+            im = ImageGrab.grabclipboard()
+        except:
+            self.input_field.delete(0, 100)
+            self.input_field.insert(0, '*PNG in clipboard not found*')
+
+        if im:
+            cwd = os.getcwd()
+            im.save(f'{cwd}/tmp/image.png', 'PNG')
+            self.input_field.delete(0, 100)
+            self.input_field.insert(0, f'{cwd}/tmp/image.png')
+        else:
+            self.input_field.delete(0, 100)
+            self.input_field.insert(0, '*PNG in clipboard not found*')
 
     def open_explorer(self):
         self.input_field.delete(0, 100)
@@ -113,9 +128,8 @@ class TextWindow(ctk.CTk):
                 width, height = main_img.size
                 new_size = (width * 2, height * 2)
                 main_img = main_img.resize(new_size)
-                main_img.save('/home/pumukun/GitHub/ImgToTxt2/test_img/anal.png')
             except:
-                self.input_field.delete(self, 0, 100)
+                self.input_field.delete(0, 100)
                 self.input_field.insert(0, '*Incorrect image*')
             result = ptsr.image_to_string(main_img, lang=self.language, config='--psm 3')
             self.text_widget1.delete('0.0', '1000.0')
