@@ -29,9 +29,10 @@ class ToplevelWindow(ctk.CTkToplevel):
         self.geometry('600x480')
         self.title('Preview image')
         self.resizable(False, False)
-        
+        self.main_img = None
+
         ## Main top level frame
-        self.top_level_frame = ctk.CTkScrollableFrame(master=self, fg_color='transparent', width=580, height=470)
+        self.top_level_frame = ctk.CTkFrame(master=self, fg_color='transparent', width=580, height=470)
         self.top_level_frame.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky='nsew')
         
         self.image_label = ctk.CTkLabel(master=self.top_level_frame, text='')
@@ -44,14 +45,8 @@ class ToplevelWindow(ctk.CTkToplevel):
         sharpen = ImageEnhance.Sharpness(img)
         img = sharpen.enhance(2)
         img = img.convert('L')
-        
-        
-        if img.width > 600:
-            img_w, img_h = img.width, img.height
-            while img_w > 600:
-                img_w -= 2
-                img_h -= 2
-            img = img.resize((img_w, img_h))
+        self.geometry(f'{img.width}x{img.height}')
+        self.top_level_frame.configure(width=img.width, height=img.height)
         photo = ctk.CTkImage(light_image=img,
                              dark_image=img, 
                              size=(img.width, img.height))
