@@ -1,12 +1,14 @@
 import tkinter
 import customtkinter as ctk
 
-from PIL import Image, ImageGrab
+from PIL import Image, ImageGrab, ImageEnhance, ImageFilter
 import pytesseract as ptsr
 
 import easygui
 import tempfile
 import os
+
+from translate import Translator
 
 filetypes = ['.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg',
              '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm',
@@ -125,25 +127,38 @@ class TextWindow(ctk.CTk):
         if file_path != '' and self.check_filetype(file_path):
             try:
                 main_img = Image.open(file_path)
-                width, height = main_img.size
-                new_size = (width * 2, height * 2)
-                main_img = main_img.resize(new_size)
+                # width, height = main_img.size
+                # new_size = (width * 2, height * 2)
+                # main_img = main_img.resize(new_size)
+                contrast = ImageEnhance.Contrast(main_img)
+                main_img = contrast.enhance(2)
+                sharpen = ImageEnhance.Sharpness(main_img)
+                main_img = sharpen.enhance(2)
+                main_img = main_img.convert('L')
+                main_img = main_img.filter(ImageFilter.MedianFilter())
             except:
                 self.input_field.delete(0, 100)
                 self.input_field.insert(0, '*Incorrect image*')
             result = ptsr.image_to_string(main_img, lang=self.language, config='--psm 3')
             self.text_widget1.delete('0.0', '1000.0')
-            self.text_widget1.insert('1.0', text=result)
+            self.text_widget1.insert('0.0', text=result)
         else:
             self.input_field.delete(0, 100)
             self.input_field.insert(0, '*Incorrect filetype*')
     
     def translate_text(self):
-        pass
-
-    
+        translator = Translator(from_lang=self.language[0:2], to_lang='ru')
+        
+        if self.text_widget1.get('0.0', '1000.0') != '':
+            translation = translator.translate(self.text_widget1.get('0.0', '1000.0'))
+            self.text_widget2.delete('0.0', '1000.0')
+            self.text_widget2.insert('0.0', text=translation)
+        else:
+            self.text_widget2.delete('0.0', '1000.0')
+            self.text_widget2.insert('0.0', text='*Nothing to translate*')
 
 
 if __name__ == '__main__':
     app = TextWindow()
     app.mainloop()
+
