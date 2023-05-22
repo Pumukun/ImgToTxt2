@@ -1,7 +1,7 @@
 import tkinter
 import customtkinter as ctk
 
-from PIL import Image, ImageGrab, ImageEnhance, ImageFilter
+from PIL import Image, ImageGrab, ImageEnhance, ImageFilter, ImageTk
 import pytesseract as ptsr
 
 import easygui
@@ -23,6 +23,42 @@ languages_list = {
 ctk.set_appearance_mode('Dark')
 ctk.set_default_color_theme('blue')
 
+class ToplevelWindow(ctk.CTkToplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.geometry('600x480')
+        self.title('Preview image')
+        self.resizable(False, False)
+        
+        ## Main top level frame
+        self.top_level_frame = ctk.CTkScrollableFrame(master=self, fg_color='transparent', width=580, height=470)
+        self.top_level_frame.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky='nsew')
+        
+        self.image_label = ctk.CTkLabel(master=self.top_level_frame, text='')
+        self.image_label.grid(row=0, column=0)
+
+    def show_image(self, image_path):
+        img = Image.open(image_path)
+        contrast = ImageEnhance.Contrast(img)
+        img = contrast.enhance(2)
+        sharpen = ImageEnhance.Sharpness(img)
+        img = sharpen.enhance(2)
+        img = img.convert('L')
+        
+        
+        if img.width > 600:
+            img_w, img_h = img.width, img.height
+            while img_w > 600:
+                img_w -= 2
+                img_h -= 2
+            img = img.resize((img_w, img_h))
+        photo = ctk.CTkImage(light_image=img,
+                             dark_image=img, 
+                             size=(img.width, img.height))
+        self.image_label.configure(image=photo)
+            
+
+
 class TextWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -30,6 +66,8 @@ class TextWindow(ctk.CTk):
         self.title('Custom Text Window')
         self.resizable(False, False)
         self.language = 'eng'
+
+        self.toplevel_window = None
 
         ## Main frame
         self.main_frame = ctk.CTkFrame(master=self, fg_color='transparent')
@@ -85,13 +123,20 @@ class TextWindow(ctk.CTk):
 
         # button to read text
         self.read_button = ctk.CTkButton(master=self.button_frame, text='Read Text', command=self.read_text, width=165)
-        self.read_button.grid(row=1, column=0, padx=(0, 0), pady=(335, 0))
+        self.read_button.grid(row=1, column=0, padx=(0, 0), pady=(180, 0))
         
         # translate button
         self.translate_button = ctk.CTkButton(master=self.button_frame, 
                                               text='Translate', 
                                               command=self.translate_text, width=165)
-        self.translate_button.grid(row=2, column=0, padx=(0, 0), pady=(10, 0))
+        self.translate_button.grid(row=2, column=0, padx=(0, 0), pady=(10, 100))
+
+        # image preview button
+        self.preview_button = ctk.CTkButton(master=self.button_frame, 
+                                            text='Preview', 
+                                            command=self.image_preview, 
+                                            width=165)
+        self.preview_button.grid(row=2, column=0, padx=(0, 0), pady=(90, 0))
 
     def check_filetype(self, file_path: str) -> bool:
         if file_path[file_path.find('.')::] in filetypes:
@@ -123,19 +168,15 @@ class TextWindow(ctk.CTk):
 
     def read_text(self, *args, **kwargs):
         file_path = self.input_field.get()
-
+        self.image_path = file_path
         if file_path != '' and self.check_filetype(file_path):
             try:
                 main_img = Image.open(file_path)
-                # width, height = main_img.size
-                # new_size = (width * 2, height * 2)
-                # main_img = main_img.resize(new_size)
                 contrast = ImageEnhance.Contrast(main_img)
                 main_img = contrast.enhance(2)
                 sharpen = ImageEnhance.Sharpness(main_img)
                 main_img = sharpen.enhance(2)
                 main_img = main_img.convert('L')
-                main_img = main_img.filter(ImageFilter.MedianFilter())
             except:
                 self.input_field.delete(0, 100)
                 self.input_field.insert(0, '*Incorrect image*')
@@ -156,6 +197,13 @@ class TextWindow(ctk.CTk):
         else:
             self.text_widget2.delete('0.0', '1000.0')
             self.text_widget2.insert('0.0', text='*Nothing to translate*')
+
+    def image_preview(self):
+        if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
+            self.toplevel_window = ToplevelWindow(self)
+        else:
+            self.toplevel_window.focus()
+        self.toplevel_window.show_image(self.input_field.get())
 
 
 if __name__ == '__main__':
