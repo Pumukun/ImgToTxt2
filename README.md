@@ -7,3 +7,5 @@ install all libraries:
 ```
 pip install -r requirements.txt
 ```
+
+Also you'll need to install tesseract and language tessdata
