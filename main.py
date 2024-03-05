@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import tkinter
 import customtkinter as ctk
 
@@ -10,14 +12,16 @@ import os
 
 from translate import Translator
 
-filetypes = ['.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg',
-             '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm',
-             '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm']
+filetypes = [
+    '.ras', '.xwd', '.bmp', '.jpe', '.jpg', '.jpeg',
+    '.xpm', '.ief', '.pbm', '.tif', '.gif', '.ppm',
+    '.xbm', '.tiff', '.rgb', '.pgm', '.png', '.pnm'
+]
 
 languages_list = {
-        'English': 'eng',
-        'Françias': 'fra',
-        'Русский': 'rus'
+    'English': 'eng',
+    'Françias': 'fra',
+    'Русский': 'rus'
 }
 
 ctk.set_appearance_mode('Dark')
@@ -34,7 +38,7 @@ class ToplevelWindow(ctk.CTkToplevel):
         ## Main top level frame
         self.top_level_frame = ctk.CTkFrame(master=self, fg_color='transparent', width=580, height=470)
         self.top_level_frame.grid(row=0, column=0, padx=(0, 0), pady=(0, 0), sticky='nsew')
-        
+
         self.image_label = ctk.CTkLabel(master=self.top_level_frame, text='')
         self.image_label.grid(row=0, column=0)
 
@@ -48,10 +52,10 @@ class ToplevelWindow(ctk.CTkToplevel):
         self.geometry(f'{img.width}x{img.height}')
         self.top_level_frame.configure(width=img.width, height=img.height)
         photo = ctk.CTkImage(light_image=img,
-                             dark_image=img, 
+                             dark_image=img,
                              size=(img.width, img.height))
         self.image_label.configure(image=photo)
-            
+
 
 
 class TextWindow(ctk.CTk):
@@ -67,7 +71,7 @@ class TextWindow(ctk.CTk):
         ## Main frame
         self.main_frame = ctk.CTkFrame(master=self, fg_color='transparent')
         self.main_frame.grid(row=1, column=0, padx=(10, 10), sticky='nsew')
-        
+
 
         ## Input frame
         self.input_frame = ctk.CTkFrame(master=self)
@@ -82,9 +86,9 @@ class TextWindow(ctk.CTk):
         self.input_field.grid(row=0, column=1, padx=(5, 0), pady=(5, 0), sticky='w')
 
         # explorer button
-        self.explorer_button = ctk.CTkButton(master=self.input_frame, 
-                                             text='explorer', 
-                                             height=4, width=70, 
+        self.explorer_button = ctk.CTkButton(master=self.input_frame,
+                                             text='explorer',
+                                             height=4, width=70,
                                              command=self.open_explorer)
         self.explorer_button.grid(row=2, column=1, padx=(5, 0), pady=(2, 5), sticky='w')
 
@@ -94,7 +98,7 @@ class TextWindow(ctk.CTk):
                                               height=4, width=70,
                                               command=self.clipboard_add)
         self.clipboard_button.grid(row=2, column=1, padx=(80, 0), pady=(2, 5), sticky='w')
-        
+
 
         ## Text fields
         self.text_widget1 = ctk.CTkTextbox(master=self.main_frame, width=300, height=500)
@@ -102,16 +106,16 @@ class TextWindow(ctk.CTk):
 
         self.text_widget2 = ctk.CTkTextbox(master=self.main_frame, width=300, height=500)
         self.text_widget2.grid(row=2, column=1, padx=(5, 0), pady=(20, 0))
-        
+
         ## Button frame
         self.button_frame = ctk.CTkFrame(master=self, fg_color='transparent')
         self.button_frame.grid(row=1, column=1, padx=(0, 0), sticky='sew')
-        
+
         # language selection menu
         self.language_var = ctk.StringVar(master=self.button_frame)
         self.language_menu = ctk.CTkOptionMenu(master=self.button_frame,
-                                               values=list(languages_list.keys()), 
-                                               command=self.option_menu_callback, 
+                                               values=list(languages_list.keys()),
+                                               command=self.option_menu_callback,
                                                width=165)
         self.language_menu.grid(row=0, column=0, padx=(0, 0), pady=(90, 0))
         self.language_menu.set('English')
@@ -119,25 +123,25 @@ class TextWindow(ctk.CTk):
         # button to read text
         self.read_button = ctk.CTkButton(master=self.button_frame, text='Read Text', command=self.read_text, width=165)
         self.read_button.grid(row=1, column=0, padx=(0, 0), pady=(180, 0))
-        
+
         # translate button
-        self.translate_button = ctk.CTkButton(master=self.button_frame, 
-                                              text='Translate', 
+        self.translate_button = ctk.CTkButton(master=self.button_frame,
+                                              text='Translate',
                                               command=self.translate_text, width=165)
         self.translate_button.grid(row=2, column=0, padx=(0, 0), pady=(10, 100))
 
         # image preview button
-        self.preview_button = ctk.CTkButton(master=self.button_frame, 
-                                            text='Preview', 
-                                            command=self.image_preview, 
+        self.preview_button = ctk.CTkButton(master=self.button_frame,
+                                            text='Preview',
+                                            command=self.image_preview,
                                             width=165)
         self.preview_button.grid(row=2, column=0, padx=(0, 0), pady=(90, 0))
 
     def check_filetype(self, file_path: str) -> bool:
         if file_path[file_path.find('.')::] in filetypes:
             return True
-        return False 
-   
+        return False
+
     def clipboard_add(self):
         try:
             im = ImageGrab.grabclipboard()
@@ -181,10 +185,10 @@ class TextWindow(ctk.CTk):
         else:
             self.input_field.delete(0, 100)
             self.input_field.insert(0, '*Incorrect filetype*')
-    
+
     def translate_text(self):
         translator = Translator(from_lang=self.language[0:2], to_lang='ru')
-        
+
         if self.text_widget1.get('0.0', '1000.0') != '':
             translation = translator.translate(self.text_widget1.get('0.0', '1000.0'))
             self.text_widget2.delete('0.0', '1000.0')
